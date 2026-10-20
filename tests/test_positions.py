@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from positions import parse_position
 
@@ -28,7 +28,7 @@ def test_parses_bus_position():
     assert position.direction == 2
     assert position.operator == 22
     assert position.vehicle == 1426
-    assert position.timestamp == datetime(2026, 10, 20, 9, 48, 59, 256000, tzinfo=timezone.utc)
+    assert position.timestamp == datetime(2026, 10, 20, 9, 48, 59, 256000, tzinfo=UTC)
     assert position.latitude == 60.217129
     assert position.longitude == 24.981056
     assert position.stop == 1270104
