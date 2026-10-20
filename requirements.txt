@@ -1,1 +1,2 @@
 aiomqtt==2.5.1
+pydantic==2.14.1
