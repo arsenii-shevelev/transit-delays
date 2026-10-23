@@ -59,3 +59,20 @@ jobs:
 
       - name: Run integration tests
         run: pytest -m integration
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Start Kafka and ingester
+        run: docker compose up --build --detach --wait
+
+      - name: Check that the ingester keeps running
+        run: |
+          sleep 20
+          docker compose ps --status running --services | grep -x ingester
+
+      - name: Logs
+        if: failure()
+        run: docker compose logs
