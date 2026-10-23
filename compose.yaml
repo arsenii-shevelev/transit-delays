@@ -21,6 +21,7 @@ services:
 
   ingester:
     build: .
+    restart: unless-stopped
     environment:
       - 'KAFKA_BOOTSTRAP_SERVERS=kafka:19092'
     depends_on:
