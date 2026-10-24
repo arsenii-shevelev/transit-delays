@@ -13,9 +13,17 @@ KAFKA_TOPIC = "vehicle-positions"
 MAX_PENDING = 500
 
 
+def check_deliveries(pending):
+    for delivery in pending:
+        if delivery.done():
+            delivery.result()
+    return [delivery for delivery in pending if not delivery.done()]
+
+
 async def forward(payloads, producer):
     pending = []
     async for payload in payloads:
+        pending = check_deliveries(pending)
         position = parse_position(payload)
         if position is None:
             continue

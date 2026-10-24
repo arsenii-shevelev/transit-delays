@@ -53,3 +53,17 @@ def test_fails_when_kafka_does_not_accept_a_position():
 
     with pytest.raises(KafkaTimeoutError):
         asyncio.run(forward(payloads(BUS), producer))
+
+
+async def endless(payload):
+    while True:
+        yield payload
+
+
+def test_reports_failed_delivery_without_waiting_for_full_batch():
+    producer = FakeProducer(error=KafkaTimeoutError())
+
+    with pytest.raises(KafkaTimeoutError):
+        asyncio.run(forward(endless(BUS), producer))
+
+    assert len(producer.sent) == 1
