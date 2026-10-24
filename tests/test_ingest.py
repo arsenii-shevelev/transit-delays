@@ -1,16 +1,26 @@
 import asyncio
 import json
 
+import pytest
+from aiokafka.errors import KafkaTimeoutError
+
 from ingest import KAFKA_TOPIC, forward
 from tests.samples import BUS, METRO, NO_GPS
 
 
 class FakeProducer:
-    def __init__(self):
+    def __init__(self, error=None):
         self.sent = []
+        self.error = error
 
     async def send(self, topic, value, key=None):
         self.sent.append((topic, key, json.loads(value)))
+        delivery = asyncio.get_running_loop().create_future()
+        if self.error:
+            delivery.set_exception(self.error)
+        else:
+            delivery.set_result(None)
+        return delivery
 
 
 async def payloads(*items):
@@ -36,3 +46,10 @@ def test_skips_messages_it_cannot_parse():
     asyncio.run(forward(payloads(NO_GPS, METRO, b"not json", BUS), producer))
 
     assert len(producer.sent) == 1
+
+
+def test_fails_when_kafka_does_not_accept_a_position():
+    producer = FakeProducer(error=KafkaTimeoutError())
+
+    with pytest.raises(KafkaTimeoutError):
+        asyncio.run(forward(payloads(BUS), producer))
