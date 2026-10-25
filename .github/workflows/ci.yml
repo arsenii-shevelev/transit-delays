@@ -5,6 +5,9 @@ on:
     branches: [master]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -72,6 +75,7 @@ jobs:
         run: |
           sleep 20
           docker compose ps --status running --services | grep -x ingester
+          test "$(docker inspect --format '{{.RestartCount}}' "$(docker compose ps -q ingester)")" = 0
 
       - name: Logs
         if: failure()
